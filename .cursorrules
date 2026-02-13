@@ -1,0 +1,25 @@
+# Northroot-Labs org workspace — agent instructions
+
+## Source of truth
+- **GitHub** is the source of truth for the Northroot-Labs org. Local clones in `repos/` are a mirror.
+- Before making changes that span repos or depend on latest code, ensure the workspace is synced: run `./scripts/sync.sh` from the workspace root (or ask the user to).
+
+## Workspace layout
+- Workspace root is the Northroot-Labs org directory. All org repos live under `repos/<repo-name>/` (e.g. `repos/docs`, `repos/orchard-data`, `repos/orchard-core`).
+- Canonical org docs and standards live in **repos/docs** (Northroot-Labs/docs on GitHub). Security standard, GitHub App plan, and cross-repo links are specified in that repo's issues and docs.
+- When a task touches multiple repos, work under `repos/` and use relative paths from the workspace root (e.g. `repos/docs/internal/security/`, `repos/orchard-data/docs/`).
+
+## Reproducible workflows
+- **List repos and local status:** `./scripts/list-repos.sh`
+- **Clone default set:** `./scripts/clone-default.sh`
+- **Sync with GitHub (pull all):** `./scripts/sync.sh`
+- Use these scripts rather than ad-hoc git commands when the intent is "align local with org" or "ensure default repos are present."
+
+## GitHub as live context
+- When you need **current GitHub state** (open issues, PRs, project items, merge status), use the **GitHub CLI** (`gh`) or **GitHub API** from the workspace. Do not rely only on local git or stale docs.
+- Reference: **repos/docs/internal/access/github/GITHUB_CONTEXT_AND_CLI.md** for commands and patterns (org repos, projects, issues, PRs). Keep that doc updated when adding new workflows.
+
+## Conventions
+- Prefer editing files under `repos/<name>/` so changes are inside the correct repo and commit boundaries stay clear.
+- Do not add long-lived secrets or GitHub App keys to this workspace or to Cursor config; use short-lived tokens or the (future) token service per org security standard.
+- When adding cross-repo links or references, point to canonical paths in **repos/docs** (e.g. `internal/security/SECRETS_AND_IDENTITY_STANDARD.md`, `internal/access/github/GITHUB_APP_ORG_PLAN.md`) or to GitHub URLs.

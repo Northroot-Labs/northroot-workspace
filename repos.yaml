@@ -1,0 +1,34 @@
+# Northroot-Labs org repos — source of truth: GitHub.
+# Regenerate or verify with: gh repo list Northroot-Labs --limit 100
+# default_working_set: cloned by scripts/clone-default.sh. Scoped to org-level + hyena focus.
+# Org-level important: docs (canon). Sole scope for hyena work: hyena-rs. Rest of repos remain in repos list; add back to default_working_set as needed.
+
+default_working_set:
+  - docs
+  - hyena-rs
+
+repos:
+  - name: docs
+    description: Northroot Labs org-wide standards and docs baseline
+  - name: orchard-core
+    description: ""
+  - name: clearlyops
+    description: ""
+  - name: orchard-data
+    description: Ag data; contracts, refined pipeline, training bundle
+  - name: northrootlabs-com
+    description: Northroot Labs public landing site
+  - name: northroot
+    description: ""
+  - name: produce-opsivy-v0
+    description: Produce-specific domain adaptation of Northroot Engine
+  - name: northroot-engine
+    description: ""
+  - name: northroot-api
+    description: HTTP API service for proof ingestion and validation
+  - name: demo-repository
+    description: Demo repository for GitHub features
+  - name: hyena-rs
+    description: Hyena CLI — policy-enforcing, file-first agent substrate (Rust)
+
+org: Northroot-Labs

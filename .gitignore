@@ -1,0 +1,9 @@
+# Cloned repos — each has its own .git; workspace repo does not track their contents
+/repos/
+
+# Local notes and large drafts (optional: remove to track)
+/notes/
+project-hyena-proposal.md
+
+# System
+.DS_Store
