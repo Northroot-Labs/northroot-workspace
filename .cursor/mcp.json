@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "hyena": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "hyena_mcp"],
+      "cwd": "repos/hyena-rs/mcp_server",
+      "env": {
+        "HYENA_ROOT": "../../docs",
+        "HYENA_BIN": "../bin/hyena"
+      }
+    }
+  }
+}
