@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Sample pre-push hook for baseline pin enforcement.
+# Install by symlinking or copying to .git/hooks/pre-push in a repo clone.
+#
+# Enforces protected branch pushes against org baseline policy:
+# - registry in northroot-workspaces/baselines/registry.json
+# - annotated tags required
+# - head must descend from required bucket baseline
+set -e
+
+REMOTE_NAME="$1"
+REMOTE_URL="$2"
+
+# Resolve workspace root relative to the current repo path.
+REPO_TOP="$(git rev-parse --show-toplevel)"
+WORKSPACE_ROOT="$(cd "$REPO_TOP/../.." && pwd)"
+BASELINE_SH="$WORKSPACE_ROOT/northroot-workspaces/baseline.sh"
+
+if [[ ! -x "$BASELINE_SH" ]]; then
+  echo "pre-push baseline check skipped: missing $BASELINE_SH" >&2
+  exit 0
+fi
+
+REPO_NAME="$(basename "$REPO_TOP")"
+REPO_FULL="Northroot-Labs/$REPO_NAME"
+
+while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+  case "$REMOTE_REF" in
+    refs/heads/*)
+      BRANCH="${REMOTE_REF#refs/heads/}"
+      "$BASELINE_SH" check-publish --repo "$REPO_FULL" --branch "$BRANCH" --head "$LOCAL_SHA"
+      ;;
+    *)
+      # Non-branch refs are not checked by this hook.
+      ;;
+  esac
+done
+
+echo "pre-push baseline checks passed for $REPO_FULL ($REMOTE_NAME $REMOTE_URL)"

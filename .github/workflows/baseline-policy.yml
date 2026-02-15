@@ -1,0 +1,33 @@
+name: baseline-policy
+
+on:
+  pull_request:
+    paths:
+      - "northroot-workspaces/baselines/**"
+      - "northroot-workspaces/baseline_verify.py"
+      - "northroot-workspaces/baseline.sh"
+  push:
+    branches:
+      - main
+    paths:
+      - "northroot-workspaces/baselines/**"
+      - "northroot-workspaces/baseline_verify.py"
+      - "northroot-workspaces/baseline.sh"
+
+jobs:
+  baseline-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate baseline registry schema
+        run: |
+          python3 northroot-workspaces/baseline_verify.py \
+            --workspace-root "$GITHUB_WORKSPACE" \
+            schema

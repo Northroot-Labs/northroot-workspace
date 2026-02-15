@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "org": "Northroot-Labs",
+  "policy": {
+    "require_annotated_tags": true,
+    "protected_branch_patterns": [
+      "main",
+      "release/*"
+    ],
+    "default_required_bucket_for_protected": "checkpoint"
+  },
+  "buckets": {
+    "checkpoint": {
+      "description": "Frequent known-good state used as minimum collaboration baseline.",
+      "cadence_hint": "weekly_or_release_train"
+    },
+    "release_candidate": {
+      "description": "Pre-release checkpoint used before production release.",
+      "cadence_hint": "per_release_train"
+    },
+    "release": {
+      "description": "Production release baseline with strongest controls.",
+      "cadence_hint": "per_production_release"
+    },
+    "incident_hotfix": {
+      "description": "Emergency patch lane baseline.",
+      "cadence_hint": "as_needed"
+    },
+    "deprecated": {
+      "description": "Historical baseline not valid for new promotions.",
+      "cadence_hint": "as_needed"
+    }
+  },
+  "repos": {
+    "Northroot-Labs/docs": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {
+        "checkpoint": {
+          "tag": "checkpoint/2026-02-15-org-baseline-1",
+          "sha": "5867e64df91dda432251623610b1c06926beba17"
+        }
+      }
+    },
+    "Northroot-Labs/orchard-core": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {}
+    },
+    "Northroot-Labs/clearlyops": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {
+        "checkpoint": {
+          "tag": "checkpoint/2026-02-15-org-baseline-1",
+          "sha": "8256191c3b12f5fce687501a3201e21f798106ea"
+        }
+      }
+    },
+    "Northroot-Labs/orchard-data": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {}
+    },
+    "Northroot-Labs/northrootlabs-com": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {}
+    },
+    "Northroot-Labs/northroot": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {}
+    },
+    "Northroot-Labs/produce-opsivy-v0": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {}
+    },
+    "Northroot-Labs/northroot-engine": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {}
+    },
+    "Northroot-Labs/northroot-api": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {}
+    },
+    "Northroot-Labs/demo-repository": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {}
+    },
+    "Northroot-Labs/hyena-rs": {
+      "required_bucket_for_protected": "checkpoint",
+      "pins": {
+        "checkpoint": {
+          "tag": "checkpoint/2026-02-15-org-baseline-1",
+          "sha": "d643d1851d8e88bc3d7eb1a5f8a185fdfa4a47d1"
+        }
+      }
+    }
+  }
+}

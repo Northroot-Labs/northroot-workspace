@@ -30,6 +30,79 @@ To **enforce** scope (fail closed for out-of-scope paths), run commands via:
 - **Checks:** Cwd must be under an in-scope path; any path-like args (e.g. `-C <path>`, `repos/...`) are validated. If any path is out of scope, the script exits 1 and does not run the command.
 - **Use when:** CI, scripts, or any runner where scope must be enforced rather than best-effort. Editors/agents can still use WORKSPACE_SCOPE.md for advisory scope; exec.sh is for strict enforcement.
 
+## Baseline policy (annotated tags)
+
+Org-wide pinned baselines are machine-truth in:
+
+- `northroot-workspaces/baselines/registry.json`
+
+Verification tooling:
+
+```bash
+./northroot-workspaces/baseline.sh schema
+./northroot-workspaces/baseline.sh verify-tags
+./northroot-workspaces/baseline.sh check-publish --repo Northroot-Labs/clearlyops --branch main --head HEAD
+```
+
+- **Tag integrity:** baseline pins are tag+sha, and tags must be **annotated tags**.
+- **Publish gate:** protected branches (`main`, `release/*`) must descend from the repo's required bucket pin (default `checkpoint`).
+- **Offline-first:** local development can proceed with local state; collaboration edges (push/CI) run online verification.
+- **Local hook template:** `northroot-workspaces/hooks/pre-push.sample`
+
+## Optional auth bootstrap (non-default)
+
+For first-time setup of local signing/session workflow, run explicitly:
+
+```bash
+./northroot-workspaces/setup-auth.sh status
+./northroot-workspaces/setup-auth.sh bootstrap --workspace-dir "$HOME/Northroot-Labs"
+./northroot-workspaces/setup-auth.sh login --workspace-dir "$HOME/Northroot-Labs"
+```
+
+- `bootstrap-signing.sh` no longer edits global `~/.gitconfig` unless `--install-global-include` is passed.
+- `checkpoint-promote.sh` performs online freshness checks (`fetch --prune --tags`) by default and tags `origin/main` unless overridden with `--target-ref`.
+
+## Signing bootstrap (optional)
+
+Bootstrap workspace-scoped SSH signing (one-time per user/machine, non-default):
+
+```bash
+chmod 700 ./northroot-workspaces/bootstrap-signing.sh ./northroot-workspaces/workspace-login.sh ./northroot-workspaces/brokered-tag.sh
+./northroot-workspaces/bootstrap-signing.sh --workspace-dir "$HOME/Northroot-Labs"
+```
+
+Unlock key and mint workspace session (per login/session):
+
+```bash
+./northroot-workspaces/workspace-login.sh --workspace-dir "$HOME/Northroot-Labs" --ttl-hours 8 --session-ttl-hours 8
+```
+
+Create signed annotated checkpoint tag with brokered metadata:
+
+```bash
+./northroot-workspaces/brokered-tag.sh \
+  --tag checkpoint/2026-02-15-main \
+  --scope "origin/main checkpoint" \
+  --run-id nr-20260215-001 \
+  --delegated-by your-user-id \
+  --mode human-cosign \
+  --co-signed-by "owner@example.com" \
+  --title "Checkpoint before release checks"
+```
+
+Or perform tag + registry pin + verification in one step:
+
+```bash
+./northroot-workspaces/checkpoint-promote.sh \
+  --repo Northroot-Labs/hyena-rs \
+  --tag checkpoint/2026-02-15-main \
+  --run-id nr-20260215-001 \
+  --delegated-by your-user-id \
+  --mode human-cosign \
+  --co-signed-by "owner@example.com" \
+  --bucket checkpoint
+```
+
 ## Modes (summary)
 
 | Mode        | Focus |
