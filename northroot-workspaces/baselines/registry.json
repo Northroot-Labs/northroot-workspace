@@ -36,8 +36,8 @@
       "required_bucket_for_protected": "checkpoint",
       "pins": {
         "checkpoint": {
-          "tag": "checkpoint/2026-02-15-org-baseline-1",
-          "sha": "5867e64df91dda432251623610b1c06926beba17"
+          "tag": "checkpoint/2026-02-15-org-baseline-2",
+          "sha": "8ac26d832804063457eda5bd9181bc4cc4c4af5d"
         }
       }
     },
