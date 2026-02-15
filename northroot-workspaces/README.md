@@ -1,0 +1,50 @@
+# Northroot workspaces — org-wide entrypoint
+
+**Purpose:** Single entrypoint for workspace scope and safe hopping. Runtime-enforced modes; not dependent on remembering to sync or local-only state.
+
+## Quick start
+
+```bash
+# From workspace root (Northroot-Labs)
+./northroot-workspaces/enter.sh <mode> [--sync]
+```
+
+- **Modes:** `narrow` | `clearlyops` | `broad` | `full` (defined in `repos/docs/internal/workspace/modes.yaml`).
+- **`--sync`:** Before setting scope, pull remotes for repos in that mode (and clone if missing for narrow/clearlyops).
+
+## How it works
+
+1. **Metadata** lives in **repos/docs/internal/workspace/** (topology + modes). That repo is the source of truth for boundaries and scope; clone/sync docs first if missing.
+2. **enter.sh** reads the chosen mode, optionally syncs the relevant repos, and writes **WORKSPACE_SCOPE.md** and **scope.json** (machine-readable) at workspace root. Agents and tools read those to stay in scope.
+3. **Safe hopping:** Run `enter.sh` with another mode anytime. No reliance on local-only edits or manual sync memory.
+
+## Hard enforcement (exec.sh)
+
+To **enforce** scope (fail closed for out-of-scope paths), run commands via:
+
+```bash
+./northroot-workspaces/exec.sh [--] <command> [args...]
+```
+
+- **Requires:** Scope must be set (`enter.sh <mode>`); **scope.json** must exist.
+- **Checks:** Cwd must be under an in-scope path; any path-like args (e.g. `-C <path>`, `repos/...`) are validated. If any path is out of scope, the script exits 1 and does not run the command.
+- **Use when:** CI, scripts, or any runner where scope must be enforced rather than best-effort. Editors/agents can still use WORKSPACE_SCOPE.md for advisory scope; exec.sh is for strict enforcement.
+
+## Modes (summary)
+
+| Mode        | Focus |
+|------------|--------|
+| narrow     | Hyena + docs (minimal surface). |
+| clearlyops | ClearlyOps control plane, CI, infra; docs for policy. |
+| broad      | All currently cloned repos. |
+| full       | Full org (clone/sync everything in repos.yaml). |
+
+## Topology and LLM context
+
+- **Topology:** `repos/docs/internal/workspace/topology.yaml` defines repo boundaries and optional `llms_txt` paths per repo for fast traversal and searchability.
+- **llms.txt:** Use where it fits (repo root or key dirs). Raw context; other structured files (e.g. NOTES.md, policy YAML) can be used instead when they fit the context. See metadata README.
+
+## Reproducible setup
+
+- List/sync/clone: use **scripts/** at workspace root (`list-repos.sh`, `sync.sh`, `clone-default.sh`).
+- To ensure a mode’s repos exist: add them to `default_working_set` in **repos.yaml**, run `./scripts/clone-default.sh`, then `./northroot-workspaces/enter.sh <mode> --sync`.

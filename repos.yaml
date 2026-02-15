@@ -6,6 +6,7 @@
 default_working_set:
   - docs
   - hyena-rs
+  - clearlyops
 
 repos:
   - name: docs
