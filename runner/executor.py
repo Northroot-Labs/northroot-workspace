@@ -223,6 +223,91 @@ class PipelineExecutor:
         self.dag = PipelineDAG(pipeline_steps)
         self.run_sm = RunStateMachine()
     
+    def resume(self, ctx: RunContext, start_from: Optional[str] = None) -> RunState:
+        """Resume pipeline execution from reconstructed context.
+        
+        Args:
+            ctx: Reconstructed run context
+            start_from: Optional step ID to start from (auto-detect if None)
+            
+        Returns:
+            Final run state
+        """
+        # If run not in EXECUTING state, transition to it
+        if ctx.run_state == RunState.CREATED:
+            self._transition_run_state(ctx, RunState.PREFLIGHT_VALIDATED, reason="Resume: validation passed")
+            self._transition_run_state(ctx, RunState.EXECUTING, reason="Resume execution")
+        elif ctx.run_state == RunState.PREFLIGHT_VALIDATED:
+            self._transition_run_state(ctx, RunState.EXECUTING, reason="Resume execution")
+        elif ctx.run_state == RunState.FAILED:
+            # Allow resume from failed state (for transient errors)
+            self._transition_run_state(ctx, RunState.EXECUTING, reason="Resume after transient failure")
+        elif ctx.run_state == RunState.BLOCKED:
+            self._transition_run_state(ctx, RunState.EXECUTING, reason="Resume after manual action")
+        
+        # Determine start point
+        if start_from is None:
+            # Find first non-completed step
+            for step_id in self.dag.order:
+                if ctx.step_states[step_id] not in {StepState.SUCCEEDED, StepState.SKIPPED}:
+                    start_from = step_id
+                    break
+        
+        if start_from is None:
+            # All steps already complete
+            self._complete_run(ctx, RunState.SUCCEEDED, "All steps already complete (resume)")
+            return ctx.run_state
+        
+        # Execute from resume point
+        start_idx = self.dag.order.index(start_from)
+        for step_id in self.dag.order[start_idx:]:
+            step = self.dag.get_step(step_id)
+            if not step:
+                continue
+            
+            # Initialize step state if missing (not in reconstructed context)
+            if step_id not in ctx.step_states:
+                ctx.step_states[step_id] = StepState.PENDING
+                ctx.step_attempts[step_id] = 0
+            
+            # Skip if already succeeded
+            if ctx.step_states[step_id] == StepState.SUCCEEDED:
+                continue
+            
+            # Check if step can execute
+            can_run, reason = ctx.can_run_step(step_id, self.dag)
+            
+            if not can_run:
+                # Skip step
+                ctx.step_states[step_id] = StepState.SKIPPED
+                continue
+            
+            # Reset failed step to pending for retry
+            if ctx.step_states[step_id] == StepState.FAILED:
+                ctx.step_states[step_id] = StepState.PENDING
+            
+            # Execute step
+            success = self.step_executor.execute_step(ctx, step)
+            
+            if not success:
+                if step.is_hard_gate:
+                    # Hard gate failure: skip downstream and fail
+                    downstream = self.dag.get_downstream_steps(step_id)
+                    for ds in downstream:
+                        if ctx.step_states[ds] == StepState.PENDING:
+                            ctx.step_states[ds] = StepState.SKIPPED
+                    
+                    self._fail_run(ctx, f"Hard gate failed: {step_id}")
+                    return ctx.run_state
+        
+        # Completed
+        if ctx.failed_hard_gates:
+            self._fail_run(ctx, f"Hard gate failures: {ctx.failed_hard_gates}")
+        else:
+            self._complete_run(ctx, RunState.SUCCEEDED, "All steps succeeded (resume)")
+        
+        return ctx.run_state
+    
     def start(self, run_id: str, reason: Optional[str] = None) -> RunContext:
         """Start new pipeline run.
         
