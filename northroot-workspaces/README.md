@@ -17,6 +17,7 @@
 1. **Metadata** lives in **repos/docs/internal/workspace/** (topology + modes). That repo is the source of truth for boundaries and scope; clone/sync docs first if missing.
 2. **enter.sh** reads the chosen mode, optionally syncs the relevant repos, and writes **WORKSPACE_SCOPE.md** and **scope.json** (machine-readable) at workspace root. Agents and tools read those to stay in scope.
 3. **Safe hopping:** Run `enter.sh` with another mode anytime. No reliance on local-only edits or manual sync memory.
+4. **Local ↔ remote alignment:** `repos/docs` is the canonical local copy of **Northroot-Labs/docs**. Sync (pull) before work, push from `repos/docs` when done so org topology and docs don’t drift. See `repos/docs/internal/workspace/LOCAL_REMOTE_TOPOLOGY.md`.
 
 ## Hard enforcement (exec.sh)
 
