@@ -6,14 +6,14 @@
 #   ./scripts/run_build_and_align.sh
 #   ./scripts/run_build_and_align.sh --skip-full-pipeline   # use existing derived data, only build bundle + minimal
 #   ./scripts/run_build_and_align.sh --data-root /path/to/orchard-data --core-root /path/to/orchard-core
-#   ./scripts/run_build_and_align.sh --raw-input-root /path/to/raw_snapshot_root
+#   ./scripts/run_build_and_align.sh --dataset-ref orchard/2025
 set -euo pipefail
 WORKSPACE_ROOT="${NORTHROOT_WORKSPACE:-$(cd "$(dirname "$0")/.." && pwd)}"
 DATA_ROOT="${DATA_ROOT:-$WORKSPACE_ROOT/repos/orchard-data}"
 CORE_ROOT="${CORE_ROOT:-$WORKSPACE_ROOT/repos/orchard-core}"
 SKIP_FULL=""
 ALLOW_BENCHMARK_FAILURE=""
-RAW_INPUT_ROOT=""
+DATASET_REF="${DATASET_REF:-orchard/2025}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -21,7 +21,8 @@ while [[ $# -gt 0 ]]; do
     --core-root) CORE_ROOT="$2"; shift 2 ;;
     --skip-full-pipeline) SKIP_FULL=1; shift ;;
     --allow-benchmark-failure) ALLOW_BENCHMARK_FAILURE=1; shift ;;
-    --raw-input-root) RAW_INPUT_ROOT="$2"; shift 2 ;;
+    --dataset-ref) DATASET_REF="$2"; shift 2 ;;
+    --raw-input-root) echo "Use --dataset-ref (raw roots are registry-resolved; fail-closed)." >&2; exit 2 ;;
     *) echo "Unknown option: $1" >&2; exit 1 ;;
   esac
 done
@@ -37,24 +38,16 @@ export CHECKPOINT_ID="${CHECKPOINT_ID:-cp-${BUILD_DATE}-${SHORT_SHA:-unknown}}"
 export ORCHARD_DATA_ROOT="$DATA_ROOT"
 export ORCHARD_USE_STAGED_LAYOUT=1
 export CYCLE="${CYCLE:-2025}"
-if [[ -n "$RAW_INPUT_ROOT" ]]; then
-  RAW_INPUT_ROOT="$(cd "$RAW_INPUT_ROOT" && pwd)"
-  export ORCHARD_RAW_INPUT_ROOT="$RAW_INPUT_ROOT"
-fi
+export ORCHARD_DATASET_REF="$DATASET_REF"
 
 echo "BUILD_DATE=$BUILD_DATE CHECKPOINT_ID=$CHECKPOINT_ID"
 echo "CORE_ROOT=$CORE_ROOT DATA_ROOT=$DATA_ROOT"
-if [[ -n "${ORCHARD_RAW_INPUT_ROOT:-}" ]]; then
-  echo "ORCHARD_RAW_INPUT_ROOT=$ORCHARD_RAW_INPUT_ROOT"
-fi
+echo "ORCHARD_DATASET_REF=$ORCHARD_DATASET_REF"
 
 # 1) Optional: fail-closed gate + benchmark from orchard-core; writes run logs to orchard_data/derived/runs/<checkpoint_id>/
 if [[ -z "$SKIP_FULL" ]]; then
   echo "Running fail-closed preflight + benchmark (orchard-core)..."
-  RUNNER_ARGS=(--data-root "$DATA_ROOT" --run-id "$CHECKPOINT_ID")
-  if [[ -n "${ORCHARD_RAW_INPUT_ROOT:-}" ]]; then
-    RUNNER_ARGS+=(--raw-input-root "$ORCHARD_RAW_INPUT_ROOT")
-  fi
+  RUNNER_ARGS=(--data-root "$DATA_ROOT" --run-id "$CHECKPOINT_ID" --dataset-ref "$ORCHARD_DATASET_REF")
   if [[ -n "$ALLOW_BENCHMARK_FAILURE" ]]; then
     RUNNER_ARGS+=(--allow-benchmark-failure)
   fi

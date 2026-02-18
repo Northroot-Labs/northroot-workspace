@@ -104,6 +104,16 @@ Or perform tag + registry pin + verification in one step:
   --bucket checkpoint
 ```
 
+## Local mode overrides
+
+Local overrides live in **modes.local.yaml** at workspace root (gitignored). To add or update a mode without editing `repos/docs`:
+
+```bash
+./northroot-workspaces/merge-local-mode.py modes.local.yaml <mode> <path1> [path2 ...] --repos <r1> [r2 ...]
+```
+
+Example: `./northroot-workspaces/merge-local-mode.py modes.local.yaml clearlyops repos/docs repos/clearlyops --repos docs clearlyops`. Promoted to canonical modes via `enter.sh <mode> --local` (when implemented) or by copying into `repos/docs/internal/workspace/modes.yaml`.
+
 ## Modes (summary)
 
 | Mode        | Focus |
