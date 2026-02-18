@@ -4,10 +4,13 @@
       "command": "uv",
       "args": ["run", "python", "-m", "hyena_mcp"],
       "cwd": "repos/hyena-rs/mcp_server",
-      "env": {
-        "HYENA_ROOT": "../../docs",
-        "HYENA_BIN": "../bin/hyena"
-      }
+      "env": { "HYENA_ROOT": "../../docs", "HYENA_BIN": "../bin/hyena" }
+    },
+    "northroot-github": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "github_mcp"],
+      "cwd": "repos/docs/internal/access/github/mcp_server",
+      "env": { "GITHUB_EXTRACTION_PROFILE": "triage" }
     }
   }
 }
