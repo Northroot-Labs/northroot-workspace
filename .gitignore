@@ -14,3 +14,6 @@ scope.json
 .scope.log
 .worktrees/
 modes.local.yaml
+
+# Temporary analysis scratch (never commit)
+.tmp/

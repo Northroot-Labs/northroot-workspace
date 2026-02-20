@@ -19,7 +19,7 @@ repos:
     description: Ag data; contracts, refined pipeline, training bundle
   - name: northrootlabs-com
     description: Northroot Labs public landing site
-  - name: northroot
+  - name: northroot-kernel
     description: ""
   - name: produce-opsivy-v0
     description: Produce-specific domain adaptation of Northroot Engine
